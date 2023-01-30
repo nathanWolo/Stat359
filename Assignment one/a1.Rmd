@@ -1,0 +1,64 @@
+---
+title: "Stat 359 Assignment 1"
+output: pdf_document
+date: "2023-01-29"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 2
+Step one: create a data frame that represents the given data
+
+```{r plants}
+plant_plot <- c(1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2)
+plant_pot <- c(1,1,2,2,3,3,1,1,2,2,3,3,1,1,2,2,3,3,1,1,2,2,3,3)
+plant_treatment <- c(1,1,1,1,1,1,2,2,2,2,2,2,1,1,1,1,1,1,2,2,2,2,2,2)
+plant_growth <- c(14.6,15.2,13.2,12.9,16.4,12.2,
+                  7.1,7.7,6.8,6.0,10.0,8.3,
+                  18.5,16.7,22.2,18.8,24.7,20.3,
+                  9.7,8.8,6.8,9.0,10.4,11.3)
+df <- data.frame(plant_plot, plant_pot, plant_treatment, plant_growth)
+df
+```
+
+Step two: Sort the data by plant growth
+
+```{r plants_sorting} 
+df[order(plant_growth),]
+```
+Step three: Calculate the mean and standard deviation of plant growth
+
+```{r plants_mean_sd} 
+mean(plant_growth)
+sd(plant_growth)
+```
+
+Step four: plot the data as a histogram
+
+```{r plants_hist} 
+
+hist(plant_growth, xlab = "Plant growth (mm)", breaks = seq(from=4, to=28, by=2))
+
+
+```
+
+
+## Question 3
+
+```{r find_sample_variance}
+
+calculate_variance <- function(y) {
+  n <- length(y)
+  mean_y <- mean(y)
+  variance <- sum((y - mean_y)^2) / (n - 1)
+  return(variance)
+}
+
+y <- c(11,11,10,8,11,3,15,11,7,6)
+variance <- calculate_variance(y)
+variance
+```
+
+
