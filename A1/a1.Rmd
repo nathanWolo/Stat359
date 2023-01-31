@@ -61,4 +61,91 @@ variance <- calculate_variance(y)
 variance
 ```
 
+## Question 4
+
+First, read in the data from the provided tv.txt
+
+```{r read_data}
+tv_data<-read.table(file ='~/Desktop/school/assignments/Stat359/A1/tv.txt', sep="",header=TRUE, na.strings="NA")
+```
+
+
+Let's calculate some stats
+
+```{r tv_summary}
+
+summary(tv_data)
+```
+This gives us the mean, median and quartile values. Let's also calculate the sample variance for both the US and Canada
+
+```{r tv_variances} 
+cn_variance <- calculate_variance(tv_data[1:90,1])
+cn_variance
+us_variance <- calculate_variance(tv_data[,2])
+us_variance
+```
+Whoa! Canada's variance is a lot higher! This makes sense, notice how the difference between Canada's max and min (6.7 vs 109.4) is significantly larger than that of the USA (53.2 vs 79.7)
+
+Now let's create a box plot comparing the two
+
+```{r tv_boxplot}
+boxplot(tv_data[1:90,1], tv_data[,2], names = c("Canada", "USA"))
+```
+
+Again, notice how much bigger Canada's range is.
+
+Now let's create our Z test function
+
+```{r z_test}
+z.test <- function(y1, y2, H1) {
+  
+  # Calculate mean of sample 1
+  mu1 <- mean(y1)
+  
+  # Calculate mean of sample 2
+  mu2 <- mean(y2)
+  
+  # Calculate standard deviation of sample 1
+  s1 <- sd(y1)
+  
+  # Calculate standard deviation of sample 2
+  s2 <- sd(y2)
+  
+  # Calculate number of observations in sample 1
+  n1 <- length(y1)
+  
+  # Calculate number of observations in sample 2
+  n2 <- length(y2)
+  
+  # Calculate standard error of the difference in means
+  se <- sqrt(s1^2/n1 + s2^2/n2)
+  
+  # Calculate the test statistic (z-score)
+  z <- (mu1 - mu2) / se
+  
+  # Calculate p-value based on alternative hypothesis
+  p <- if (H1 == "two.sided") {
+    # two-sided test
+    2 * (1 - pnorm(abs(z)))
+  } else if (H1 == "less") {
+    # less than alternative
+    pnorm(z)
+  } else if (H1 == "greater") {
+    # greater than alternative
+    1 - pnorm(z)
+  }
+  
+  # Return p-value
+  return(p)
+}
+
+two_sided_pval <- z.test(tv_data[1:90,1], tv_data[,2], "two.sided")
+two_sided_pval
+less_pval <- z.test(tv_data[1:90,1], tv_data[,2], "less")
+less_pval
+greater_pval <- z.test(tv_data[1:90,1], tv_data[,2], "greater")
+greater_pval
+```
+
+The purpose of the study is to determine if Canadians watch less TV than Americans, the relevant alternative hypothesis is "less": $H_a: Ca - USA < 0$. The p value for this hypothesis is 0.022, suggesting it is likely true, since if it weren't we'd only have a approx 2% chance of seeing results this extreme.
 
