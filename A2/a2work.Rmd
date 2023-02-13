@@ -1,0 +1,78 @@
+---
+title: "Assignment2"
+output: html_document
+date: "2023-02-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 1
+
+We need to generate samples from the requested distributions. We can do so with the following code:
+
+
+```{r samples}
+
+
+
+# Specify the sample sizes and number of samples
+sample_sizes <- c(10, 20, 50, 100, 1000)
+num_samples <- c(10, 100, 1000, 10000)
+
+# Create list objects to store the samples
+samples_uniform <- list()
+samples_poisson <- list()
+samples_binomial <- list()
+
+# Generate the samples using a for loop
+for (i in seq_along(sample_sizes)) {
+  m <- sample_sizes[i]
+  samples_uniform[[i]] <- list()
+  samples_poisson[[i]] <- list()
+  samples_binomial[[i]] <- list()
+  for (j in seq_along(num_samples)) {
+    n <- num_samples[j]
+    samples_uniform[[i]][[j]] <- replicate(m, runif(n, 0, 1))
+    samples_poisson[[i]][[j]] <- replicate(m, rpois(n, 5))
+    samples_binomial[[i]][[j]] <- replicate(m, rbinom(n, 1, 0.2))
+  }
+}
+
+# Calculate the sample means
+mean_samples_uniform <- lapply(samples_uniform, function(x) {
+  lapply(x, rowMeans)
+})
+
+mean_samples_poisson <- lapply(samples_poisson, function(x) {
+  lapply(x, rowMeans)
+})
+
+mean_samples_binomial <- lapply(samples_binomial, function(x) {
+  lapply(x, rowMeans)
+})
+
+# Plot the histograms of the sample means
+par(mfrow=c(4,3), cex=0.4, mar = rep(2, 4))
+for (i in seq_along(sample_sizes)) {
+  for (j in seq_along(num_samples)) {
+    hist(mean_samples_uniform[[i]][[j]], main=paste("Uniform: sample_size=", sample_sizes[i], "num_samples=", num_samples[j]),
+         xlab="Sample Mean", col="red", breaks=30)
+    hist(mean_samples_poisson[[i]][[j]], main=paste("Poisson: sample_size=", sample_sizes[i], "num_samples=", num_samples[j]),
+         xlab="Sample Mean", col="blue", breaks=30)
+    hist(mean_samples_binomial[[i]][[j]], main=paste("Binomial: sample_size=", sample_sizes[i], "num_samples=", num_samples[j]),
+         xlab="Sample Mean", col="green", breaks=30)
+  }
+}
+
+
+      
+      
+```
+
+The CLT states that, for iid samples, the standardized sample mean tends towards the standard normal distribution even if the random variables being sampled are not normally distributed. First we can see the effect of fixing the sample size and increasing the number of samples. This leads to the familiar "bell" shape of the standard normal (I added an even higher value for num_samples at the end to make this even more explicit). If we fix the number of samples and increase the sample size, we can observe that the variance decreases (i.e the x axis becomes a smaller band of values).
+
+The outcome is the same for all three distributions, this is because the CLT and law of large numbers applies to any sequence of iid random variables*.
+
+*if the variance of the RVs are finite, which it is for all of these.
