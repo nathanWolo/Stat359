@@ -76,3 +76,18 @@ The CLT states that, for iid samples, the standardized sample mean tends towards
 The outcome is the same for all three distributions, this is because the CLT and law of large numbers applies to any sequence of iid random variables*.
 
 *if the variance of the RVs are finite, which it is for all of these.
+
+## Question 2
+
+
+First, read in the data
+
+```{r readq2}
+
+# Read the txt file into a data frame
+df <- read.table("salt.txt", header = TRUE, sep = "\t")
+
+# View the data frame
+head(df)
+```
+
