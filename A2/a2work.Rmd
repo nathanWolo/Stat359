@@ -104,6 +104,13 @@ ggplot(salt, aes(x = salt)) +
   labs(x = "Salt (g)", y = "Frequency", title = "Histogram of Salt")
 
 
+stereogram<-read.table(file ='salt.txt', sep="",header=TRUE)
+salty<-stereogram$salt
+boxplot(salt,col='green',names=c('salty'))
+title('salty')
+
+qqnorm(salty,main='salty')
+
 ```
 
 Next we can find the skew and kurtosis:
@@ -133,21 +140,37 @@ boot_skew <- function(x, i) {
   return(skewness(x[i]))
 }
 
+# Define a function to compute kurtosis
+boot_kurt <- function(x, i) {
+  return(kurtosis(x[i]))
+}
+
 # Set the number of bootstrap replicates
 B <- 1000
 
 # Generate bootstrap samples and compute skewness
-boot_results <- boot(salt$salt, boot_skew, R = B)
-
+skewboot_results <- boot(salt$salt, boot_skew, R = B)
+kurtboot_results <- boot(salt$salt, boot_kurt, R = B)
 # View the bootstrap results
-boot_results
-
+skewboot_results
+kurtboot_results
 # Calculate the bootstrap confidence interval
-boot_ci <- quantile(boot_results$t, c(0.025, 0.975))
+skewboot_ci <- quantile(skewboot_results$t, c(0.025, 0.975))
 
 # Print the bootstrap estimate and confidence interval
-cat("Bootstrap skewness estimate: ", mean(boot_results$t), "\n")
-cat("Bootstrap 95% confidence interval: [", boot_ci[1], ", ", boot_ci[2], "]\n")
+cat("Bootstrap skewness estimate: ", mean(skewboot_results$t), "\n")
+cat("Bootstrap 95% confidence interval: [", skewboot_ci[1], ", ", skewboot_ci[2], "]\n")
 
+# Calculate the bootstrap confidence interval
+kurtboot_ci <- quantile(kurtboot_results$t, c(0.025, 0.975))
+
+# Print the bootstrap estimate and confidence interval
+cat("Bootstrap kurtosis estimate: ", mean(kurtboot_results$t), "\n")
+cat("Bootstrap 95% confidence interval: [", kurtboot_ci[1], ", ", kurtboot_ci[2], "]\n")
 ```
+
+Judging from the visualizations and values, it seems like the distribution might have positive skew and positive kurtosis, but it is hard to make a definitive statement given the small sample size. The confidence interval for the kurtosis is strongly positive, while for the skew it is only slightly more positive than negative. So we can be more confident about positive kurtosis than positive skew.
+
+## Question 3
+
 
