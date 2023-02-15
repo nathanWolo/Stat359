@@ -85,9 +85,69 @@ First, read in the data
 ```{r readq2}
 
 # Read the txt file into a data frame
-df <- read.table("salt.txt", header = TRUE, sep = "\t")
+salt <- read.table("salt.txt", header = TRUE, sep = "\t")
 
 # View the data frame
-head(df)
+head(salt)
+```
+
+Now let's visualize the data
+
+```{r plot_salt}
+
+# Load the ggplot2 library
+library(ggplot2)
+
+# Create a histogram of the salt variable
+ggplot(salt, aes(x = salt)) +
+  geom_histogram(fill = "blue", color = "black") +
+  labs(x = "Salt (g)", y = "Frequency", title = "Histogram of Salt")
+
+
+```
+
+Next we can find the skew and kurtosis:
+
+```{r moments}
+
+# Load the moments package
+library(moments)
+
+# Estimate the skewness of the salt variable
+skewness(salt$salt)
+
+# Estimate the kurtosis of the salt variable
+kurtosis(salt$salt)
+
+```
+
+And now, using a bootstrap to estimate a 95% confidence interval for the skew:
+
+```{r skewstrap}
+# Load the moments and boot packages
+library(moments)
+library(boot)
+
+# Define a function to compute skewness
+boot_skew <- function(x, i) {
+  return(skewness(x[i]))
+}
+
+# Set the number of bootstrap replicates
+B <- 1000
+
+# Generate bootstrap samples and compute skewness
+boot_results <- boot(salt$salt, boot_skew, R = B)
+
+# View the bootstrap results
+boot_results
+
+# Calculate the bootstrap confidence interval
+boot_ci <- quantile(boot_results$t, c(0.025, 0.975))
+
+# Print the bootstrap estimate and confidence interval
+cat("Bootstrap skewness estimate: ", mean(boot_results$t), "\n")
+cat("Bootstrap 95% confidence interval: [", boot_ci[1], ", ", boot_ci[2], "]\n")
+
 ```
 
