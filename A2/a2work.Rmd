@@ -201,15 +201,11 @@ title('fecundity for NS')
 qqnorm(fec$RS,main='fecundity for RS')
 qqnorm(fec$NS,main='fecundity for NS')
 
-rs_mean <- mean(fec$RS)
-ns_mean <- mean(fec$NS)
-rs_mean
-ns_mean
+ttest <- t.test(x=fec$RS, y= fec$NS)
+ttest
 
-rs_var <- var(fec$RS)
-ns_var <- var(fec$NS)
-rs_var
-ns_var
+vartest <- var.test(x = fec$NS,  y=fec$RS)
+vartest
 
 ```
 
