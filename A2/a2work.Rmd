@@ -169,7 +169,7 @@ cat("Bootstrap kurtosis estimate: ", mean(kurtboot_results$t), "\n")
 cat("Bootstrap 95% confidence interval: [", kurtboot_ci[1], ", ", kurtboot_ci[2], "]\n")
 ```
 
-Judging from the visualizations and values, it seems like the distribution might have positive skew and positive kurtosis, but it is hard to make a definitive statement given the small sample size. The confidence interval for the kurtosis is strongly positive, while for the skew it is only slightly more positive than negative. So we can be more confident about positive kurtosis than positive skew.
+Judging from the visualizations and values, it seems like the distribution has slightly positive skew and slightly negative kurtosis, as the value for skew > 0 and the value for kurtosis < 3. But the confidence intervals for both are quite large, and the data size is small.
 
 ## Question 3
 
@@ -209,7 +209,7 @@ vartest
 
 ```
 
-We can clearly see that yes, the two populations do differ both in the mean of their fecundity and the variance.
+We can clearly see that the populations likely have different mea (p < 0.05)ns, but the same variance (p > 0.05).
 
 ## Question 4
 
