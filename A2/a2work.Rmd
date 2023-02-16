@@ -101,7 +101,7 @@ library(ggplot2)
 # Create a histogram of the salt variable
 ggplot(salt, aes(x = salt)) +
   geom_histogram(fill = "blue", color = "black") +
-  labs(x = "Salt (g)", y = "Frequency", title = "Histogram of Salt")
+  labs(x = "Saltiness", y = "Frequency", title = "Histogram of Salt")
 
 
 stereogram<-read.table(file ='salt.txt', sep="",header=TRUE)
@@ -173,4 +173,92 @@ Judging from the visualizations and values, it seems like the distribution might
 
 ## Question 3
 
+```{r load_fecundity}
+# Read the txt file into a data frame
+fec <- read.table("fecundity.txt", header = TRUE)
 
+# View the data frame
+head(fec)
+
+# Create a histogram of the salt variable
+ggplot(fec, aes(x = fec$RS)) +
+  geom_histogram(fill = "green", color = "black") +
+  labs(x = "fecundity", y = "Frequency", title = "Histogram of fecundity for RS")
+
+# Create a histogram of the salt variable
+ggplot(fec, aes(x = fec$NS)) +
+  geom_histogram(fill = "blue", color = "black") +
+  labs(x = "fecundity", y = "Frequency", title = "Histogram of fecundity for NS")
+
+
+boxplot(fec$RS,col='green',names=c('fecundity'))
+title('fecundity for RS')
+
+boxplot(fec$NS,col='blue',names=c('fecundity'))
+title('fecundity for NS')
+
+
+qqnorm(fec$RS,main='fecundity for RS')
+qqnorm(fec$NS,main='fecundity for NS')
+
+rs_mean <- mean(fec$RS)
+ns_mean <- mean(fec$NS)
+rs_mean
+ns_mean
+
+rs_var <- var(fec$RS)
+ns_var <- var(fec$NS)
+rs_var
+ns_var
+
+```
+
+We can clearly see that yes, the two populations do differ both in the mean of their fecundity and the variance.
+
+## Question 4
+
+
+```{r fabric_a}
+# read in the text file
+# 1. Read the text file
+lines <- readLines("fabric.txt")
+
+# 2. Split each row into separate elements
+data_list <- strsplit(lines, " ")
+
+# 3. Convert character elements to numeric
+data_list <- lapply(data_list, as.numeric)
+# 
+data_list
+
+hvals <- as.vector(t(data_list[[1]][-1]))
+
+pvals <- as.vector(t(data_list[[3]][-1]))
+
+hvals 
+pvals
+fab_data <- data.frame(col1=hvals, col2=pvals)
+colnames(fab_data) <- c("H", "P")
+head(fab_data)
+
+qqnorm(fab_data$H,main='H')
+qqnorm(fab_data$P,main='P')
+
+# Create the box plot
+my_plot <- ggplot(fab_data, aes(x = factor(1), y = H, fill = "H")) +
+  geom_boxplot() +
+  geom_boxplot(aes(x = factor(2), y = P, fill = "P")) +
+  scale_fill_manual(values = c("H" = "red", "P" = "blue")) +
+  xlab("") +
+  ylab("Values") +
+  ggtitle("Comparative Box Plot for H and P")
+
+# Print the plot
+print(my_plot)
+
+mean(fab_data$H)
+mean(fab_data$P)
+
+```
+
+The high quality qqnorm is basically linear, indicating that it is drawn from a normal distribution. The poor quality qqnorm shows positive skew, and is asymmetric. The box plot shows that H has a slightly higher mean, but given that the sample size is small (especially for p) it is hard to confidently say that the true average for H is higher.
