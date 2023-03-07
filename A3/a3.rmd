@@ -1,0 +1,24 @@
+---
+title: "Assignment2"
+output: html_document
+date: "2023-03-7"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 1
+
+We need to determine if the movies produced by company 2 are longer than the movies produced by company 1, by more than 10 minutes, against the alternative hypothesis that the difference is less than 10 minutes. First, let's initialize the data.
+
+```{r init_data_q1}
+c1_movies <- c(102,86,98,109,92)
+c2_movies <- c(81,165, 97, 134, 92, 87, 114)
+```
+
+Now, we can compare the variance of the two samples; before we compare the means we must know if the variances are substantially different. To do this we can use an F test.
+
+```{r q_1_ftest}
+var.test(c2_movies, c1_movies, alternative = "two.sided")
+```
