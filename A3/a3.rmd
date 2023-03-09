@@ -13,12 +13,131 @@ knitr::opts_chunk$set(echo = TRUE)
 We need to determine if the movies produced by company 2 are longer than the movies produced by company 1, by more than 10 minutes, against the alternative hypothesis that the difference is less than 10 minutes. First, let's initialize the data.
 
 ```{r init_data_q1}
-c1_movies <- c(102,86,98,109,92)
-c2_movies <- c(81,165, 97, 134, 92, 87, 114)
+
+company1 <- c(102, 86, 98, 109, 92)
+company2 <- c(81, 165, 97, 134, 92, 87, 114)
 ```
+
+We should check the normality of the data, as it is a key assumption for many tests we would like to run.
+
+```{r check_normal_q1}
+
+data <- data.frame(company = rep(c("1", "2"), c(length(company1), length(company2))),
+                   time = c(company1, company2))
+
+# Create a normal QQ plot for time variable
+qqnorm(data$time, main='time')
+qqline(data$time) # Add reference line
+
+```
+
+As the qqplot is mostly linear (though it is hard to be certain with such a small sample), then we can assume normality, which is a help for using F and T tests.
 
 Now, we can compare the variance of the two samples; before we compare the means we must know if the variances are substantially different. To do this we can use an F test.
 
+First we should check the quantiles of the F distribution so that we can know how significant the result of our F test is.
+
+
 ```{r q_1_ftest}
-var.test(c2_movies, c1_movies, alternative = "two.sided")
+qf(0.95, 6,4)
+var.test(company2, company1, alternative = "two.sided")
 ```
+
+This tells us that we can be quite confident that the variance of the populations from which we draw the samples are likely to be different, meaning we shouldn't use Student's t test, but instead Welch's t test.
+
+Carrying out the t test (and checking the critical value for our current comparison) to check the difference in means:
+
+```{r q_1_ttest}
+qt(0.9, 10)
+t.test(company2, company1, alternative="less", mu=10, conf.level=0.9)
+```
+
+We can see from the result of the test that our p value under the null hypothesis is rather high (0.5822), and since we have a 0.1 confidence interval we can accept the null hypothesis that the movies from company 2 are 10 minutes longer.
+
+We can also use a boxplot:
+
+```{r boxplotq1}
+boxplot(time ~ company,
+        data = data,
+        col = "steelblue",
+        main = "Time by Company",
+        xlab = "Company",
+        ylab = "Time")
+```
+
+
+This displays what we observed earlier, company 2's larger variance, as well as its larger mean.
+
+
+## Question 2
+
+First lets load our data
+
+```{r q2_load}
+
+# Create a vector of tensile strength measurements
+tensile <- c(17.5, 16.9, 15.8, 18.6,
+             16.4, 19.2, 17.7, 15.4,
+             20.3, 15.7, 17.8, 18.9,
+             14.6, 16.7, 20.8, 18.9,
+             17.5, 19.2, 16.5, 20.5,
+             18.3, 16.2 ,17.5 ,20.1)
+
+# Create a vector of machine labels
+machine <- factor(rep(1:6 , each =4))
+
+# Create a data frame with tensile and machine columns
+data <- data.frame(tensile , machine)
+
+# Plot tensile strength by machine group
+plot(machine , tensile , ylim = c(10 , 30) , ylab = "Tensile Strength" , xlab = "Machine Group" ,
+pch = 21 , bg = as.numeric(machine))
+abline(h = mean(tensile[machine == 1]))
+abline(h = mean(tensile[machine == 2]) , col = "red")
+abline(h = mean(tensile[machine == 3]) , col = "green")
+abline(h = mean(tensile[machine == 4]) , col = "blue")
+abline(h = mean(tensile[machine == 5]) , col = "orange")
+abline(h = mean(tensile[machine == 6]) , col = "purple")
+
+```
+
+
+We can see that there is some difference in machine variance and mean tensile strength.
+
+let's check normality:
+
+```{r check_normal_q2}
+# Load the ggplot2 package
+library(ggplot2)
+
+# Create a qqplot for each machine group
+ggplot(data , aes(sample = tensile)) +
+  geom_qq() +
+  geom_qq_line() +
+  facet_wrap(~ machine)
+```
+
+Seems normal!
+
+next we check the variances:
+
+```{r check_var}
+# Calculate the variance of tensile strength for each machine group
+tapply(data$tensile , data$machine , var)
+```
+
+They are quite different! So a default anova (which assumes similar variances) won't be appropriate. But we can use Welch's anova instead.
+
+```{r q2_anova}
+
+# Perform Welch's ANOVA on tensile strength by machine group
+oneway.test(tensile ~ machine , data = data , var.equal = FALSE)
+# Next we perform the Kruskal-Wallis test
+kruskal.test(tensile ~ machine)
+```
+
+Judging by these outputs, there is no reason to consider the difference between machines significant at alpha = 0.05
+
+## Question 3
+
+
