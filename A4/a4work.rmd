@@ -1,0 +1,12 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## Question 1
+
+Like always, the first step of the question is to lead the data into R
+
+```{r load_data}
+
+```
