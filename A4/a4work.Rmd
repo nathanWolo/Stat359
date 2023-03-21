@@ -203,4 +203,166 @@ The results show that despite the different shapes of the datasets, they all hav
 
 ## Question 4
 
+First we load the data
 
+```{r q4_load_data}
+
+growth_data <- read.csv('growth.txt')
+
+
+head(growth_data)
+```
+
+Now we can create our 3 models:
+
+```{r q4_make_models}
+# Load required packages
+library(readr)
+library(ggplot2)
+
+# Read data
+file_path <- "growth.txt"
+growth_data <- read_table(file_path, col_names = c("time", "height"))
+
+# Convert 'time' and 'height' to numeric
+growth_data$time <- as.numeric(growth_data$time)
+growth_data$height <- as.numeric(growth_data$height)
+
+# Remove any rows with NA values
+growth_data <- na.omit(growth_data)
+
+# Fit the models
+logistic_fit <- nls(height ~ SSlogis(time, a, b, c), data = growth_data)
+gompertz_fit <- nls(height ~ SSgompertz(time, a, b, c), data = growth_data)
+# von_bert_fit <- nls(height ~ a - a * exp(-b * (time + c)), data = growth_data, start = list(a = start_vals_von_bert[1], b = start_vals_von_bert[2], c = start_vals_von_bert[3]))
+
+# von_bertalanffy <- function(time, a, b, c) a - a * exp(-b * (time + c))
+von_bertalanffy <- function(time, a, b, c) {
+  a - a * exp(-b * (time + c))
+}
+# Objective function for the Von Bertalanffy model
+objective_von_bert <- function(pars, time, height) {
+  a <- pars[1]
+  b <- pars[2]
+  c <- pars[3]
+  sum((height - von_bertalanffy(time, a, b, c))^2)
+}
+
+# Estimate starting values using optim()
+start_vals_von_bert <- optim(c(max(growth_data$height), 0.1, 0), objective_von_bert, time = growth_data$time, height = growth_data$height)$par
+
+# Fit the Von Bertalanffy model
+von_bert_fit <- nls(height ~ a - a * exp(-b * (time + c)), data = growth_data, start = list(a = start_vals_von_bert[1], b = start_vals_von_bert[2], c = start_vals_von_bert[3]))
+
+# Create a new data frame for predictions
+prediction_data <- data.frame(time = growth_data$time)
+prediction_data$logistic <- predict(logistic_fit, prediction_data)
+prediction_data$gompertz <- predict(gompertz_fit, prediction_data)
+prediction_data$von_bert <- predict(von_bert_fit, prediction_data)
+
+# Plot the observed data and the estimated curves for all three models
+ggplot(growth_data, aes(x = time, y = height)) +
+  geom_point() +
+  geom_line(data = prediction_data, aes(y = logistic, color = "Logistic")) +
+  geom_line(data = prediction_data, aes(y = gompertz, color = "Gompertz")) +
+  geom_line(data = prediction_data, aes(y = von_bert, color = "Von Bertalanffy")) +
+  labs(title = "Growth Curves", x = "Year", y = "Height", color = "Model") +
+  theme_minimal()
+
+
+```
+
+
+For the logistic and Gompertz models, the built-in self-starting functions SSlogis() and SSgompertz() were used to automatically estimate reasonable starting values for the parameters. These functions simplify the process and reduce the risk of convergence issues when using nls fitting.
+
+For the Von Bertalanffy model, starting values were estimated using the optim() function, which performs a general-purpose optimization. An objective function was created to calculate the sum of squared residuals between observed data and model predictions. The optim() function searched for parameter values that minimized this objective function, with an initial guess based on the maximum observed height in the data and small positive values for the other two parameters. The resulting values were used as starting values for the nls() function when fitting the model.
+
+
+
+To provide a 95% confidence interval for lim(t→∞)f(t) for each of the three models, we will first need to extract the parameter estimates and their standard errors from each model. The lim(t→∞)f(t) for each model is as follows:
+
+Logistic: lim(t→∞)f(t) = a
+
+Gompertz: lim(t→∞)f(t) = a
+
+Von Bertalanffy: lim(t→∞)f(t) = a
+
+For each model, the limit as t goes to infinity is the 'a' parameter.
+
+Now let's calculate the 95% confidence intervals for each model:
+
+```{r q4_estimates}
+# Confidence intervals for each model
+confint_logistic <- confint(logistic_fit)
+confint_gompertz <- confint(gompertz_fit)
+confint_von_bert <- confint(von_bert_fit)
+
+# 95% confidence intervals for lim(t→∞)f(t) for each model
+logistic_CI <- confint_logistic["a",]
+gompertz_CI <- confint_gompertz["a",]
+von_bert_CI <- confint_von_bert["a",]
+
+logistic_CI
+gompertz_CI
+von_bert_CI
+
+
+```
+
+These confidence intervals represent the range within which we can be 95% confident that the true value of lim(t→∞)f(t) lies. In the context of this problem, this represents the height the tree would reach as time goes to infinity, or in other words, the maximum height the tree can grow to.
+
+Now let's select the best model:
+
+```{r q4_model_select}
+# Calculate AIC values
+AIC_logistic <- AIC(logistic_fit)
+AIC_gompertz <- AIC(gompertz_fit)
+AIC_von_bert <- AIC(von_bert_fit)
+
+# Select the best model
+best_model <- which.min(c(AIC_gompertz, AIC_logistic, AIC_von_bert))
+
+# Print best model
+best_model
+
+```
+
+Now that we have identified the best model (logistic), let's plot an estimate of the derivative df(t)/dt, which represents the rate of growth over time:
+
+```{r q4_derivative_estimate}
+# Extract parameters from the logistic model
+logistic_params <- coef(logistic_fit)
+a <- logistic_params["a"]
+b <- logistic_params["b"]
+c <- logistic_params["c"]
+
+# Create a function for the derivative of the logistic model
+logistic_derivative <- function(t, a, b, c) {
+  (a * b * c * exp(-c * t)) / (1 + b * exp(-c * t))^2
+}
+
+# Calculate the derivative for the time values
+prediction_data$logistic_derivative <- logistic_derivative(prediction_data$time, a, b, c)
+
+# Plot the derivative of the logistic model
+ggplot(prediction_data, aes(x = time, y = logistic_derivative)) +
+  geom_line(color = "blue") +
+  labs(title = "Derivative of the Logistic Model", x = "Year", y = "Rate of Growth (df(t)/dt)") +
+  theme_minimal()
+
+
+```
+
+
+Most of the change is bunched up at the start, so I'll also plot it with the time on a log scale.
+
+```{r q4_log_scale}
+
+# Plot the derivative of the logistic model with log scale on X-axis
+ggplot(prediction_data, aes(x = time, y = logistic_derivative)) +
+  geom_line(color = "blue") +
+  labs(title = "Derivative of the Logistic Model (Log-scaled X-axis)", x = "Year (log scale)", y = "Rate of Growth (df(t)/dt)") +
+  scale_x_log10() +
+  theme_minimal()
+
+```
