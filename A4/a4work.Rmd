@@ -1,3 +1,8 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 
 
 ## Question 1
@@ -234,9 +239,7 @@ growth_data <- na.omit(growth_data)
 # Fit the models
 logistic_fit <- nls(height ~ SSlogis(time, a, b, c), data = growth_data)
 gompertz_fit <- nls(height ~ SSgompertz(time, a, b, c), data = growth_data)
-# von_bert_fit <- nls(height ~ a - a * exp(-b * (time + c)), data = growth_data, start = list(a = start_vals_von_bert[1], b = start_vals_von_bert[2], c = start_vals_von_bert[3]))
 
-# von_bertalanffy <- function(time, a, b, c) a - a * exp(-b * (time + c))
 von_bertalanffy <- function(time, a, b, c) {
   a - a * exp(-b * (time + c))
 }
@@ -279,17 +282,7 @@ For the Von Bertalanffy model, starting values were estimated using the optim() 
 
 
 
-To provide a 95% confidence interval for lim(t→∞)f(t) for each of the three models, we will first need to extract the parameter estimates and their standard errors from each model. The lim(t→∞)f(t) for each model is as follows:
-
-Logistic: lim(t→∞)f(t) = a
-
-Gompertz: lim(t→∞)f(t) = a
-
-Von Bertalanffy: lim(t→∞)f(t) = a
-
-For each model, the limit as t goes to infinity is the 'a' parameter.
-
-Now let's calculate the 95% confidence intervals for each model:
+To provide a 95% confidence interval for lim($t \rightarrow \infty$)f(t) for each of the three models, we will first need to extract the parameter estimates and their standard errors from each model. The lim($t \rightarrow \infty$)f(t) for each model is as follows:
 
 ```{r q4_estimates}
 # Confidence intervals for each model
@@ -297,7 +290,7 @@ confint_logistic <- confint(logistic_fit)
 confint_gompertz <- confint(gompertz_fit)
 confint_von_bert <- confint(von_bert_fit)
 
-# 95% confidence intervals for lim(t→∞)f(t) for each model
+# 95% confidence intervals
 logistic_CI <- confint_logistic["a",]
 gompertz_CI <- confint_gompertz["a",]
 von_bert_CI <- confint_von_bert["a",]
@@ -309,7 +302,7 @@ von_bert_CI
 
 ```
 
-These confidence intervals represent the range within which we can be 95% confident that the true value of lim(t→∞)f(t) lies. In the context of this problem, this represents the height the tree would reach as time goes to infinity, or in other words, the maximum height the tree can grow to.
+These confidence intervals represent the range within which we can be 95% confident that the true value of lim($t \rightarrow \infty$)f(t) lies. In the context of this problem, this represents the height the tree would reach as time goes to infinity, or in other words, the maximum height the tree can grow to.
 
 Now let's select the best model:
 
@@ -326,6 +319,9 @@ best_model <- which.min(c(AIC_gompertz, AIC_logistic, AIC_von_bert))
 best_model
 
 ```
+
+In this analysis, the best model is selected based on the Akaike Information Criterion (AIC) values. The AIC is a measure of the relative quality of a statistical model, considering both the goodness of fit and the complexity of the model. Lower AIC values indicate a better balance between fitting the data well and not overfitting, which can lead to poor predictions for new data points.
+
 
 Now that we have identified the best model (logistic), let's plot an estimate of the derivative df(t)/dt, which represents the rate of growth over time:
 
